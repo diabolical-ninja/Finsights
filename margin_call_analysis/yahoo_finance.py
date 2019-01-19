@@ -47,7 +47,11 @@ def get_yahoo_history(symbol, start_date, end_date, frequency):
     yahoo_session = session.get(session_url)
 
     # Crumb required for each request
-    yahoo_crumb = re.findall('"CrumbStore":{"crumb":"(.+?)"}', yahoo_session.text)[0]
+    yahoo_crumb = re.findall('"CrumbStore":{"crumb":"(.+?)"}', yahoo_session.text)
+    if len(yahoo_crumb) == 0:
+        raise ValueError("No crumb found. Probably couldn't find your symbol.")
+    else:
+        yahoo_crumb = yahoo_crumb[0]
 
     # Map frequency to what Yahoo expect
     if frequency == 'daily':
@@ -71,8 +75,12 @@ def get_yahoo_history(symbol, start_date, end_date, frequency):
     response = session.get(final_url)
 
     if response.status_code == 404:
-        returned_error = response_json['chart']['error']['description']
+        returned_error = response.json()['chart']['error']['description']
         raise ValueError("From Yahoo: {}".format(returned_error))
+
+    if response.status_code == 401:
+        returned_error = response.json()['finance']['error']['description']
+        raise ValueError("From Yahoo: {}".format(returned_error))        
 
     elif response.status_code == 200:
 
@@ -83,4 +91,4 @@ def get_yahoo_history(symbol, start_date, end_date, frequency):
         df['Date'] = pd.to_datetime(df['Date'])
         
         return df
-    
+
