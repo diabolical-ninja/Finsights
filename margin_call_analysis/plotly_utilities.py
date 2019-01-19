@@ -90,7 +90,7 @@ def timeseries(df, x, y, title='', xlabel='', ylabel='', lines=None, shape='wide
             raise ValueError("Please provide the column name containing your series names")
         
         data = [go.Scatter(
-            x = df[x],
+            x = df[df[key_col]==key][x],
             y = df[df[key_col]==key][y[0]],
             name = key
         ) for key in keys]
