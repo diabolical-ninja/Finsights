@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 from string import digits
 import math
+from datetime import datetime
+from yahoo_finance import get_yahoo_history
 from alpha_vantage.timeseries import TimeSeries
 
 
@@ -41,7 +43,6 @@ def get_historical_data(key, time_slice, symbol):
     Returns:
         DataFrame: EOD dataframe
     """
-
 
     # Instantiate Session
     ts = TimeSeries(key=key, output_format='pandas', indexing_type='integer')
@@ -178,7 +179,7 @@ def create_margin_call_range_table(max_lvr, buffer=0.1, step_size=0.01):
     return df
 
 
-def margin_call_samples(key, symbol, time_slice, drawdown_window, lvr_lookup):
+def margin_call_samples(symbol, time_slice, drawdown_window, lvr_lookup):
     """Helper function to wrap all steps
     
     Args:
@@ -194,11 +195,15 @@ def margin_call_samples(key, symbol, time_slice, drawdown_window, lvr_lookup):
     """
 
     # Get historical price data
-    df_eod = get_historical_data(key = key, time_slice=time_slice, symbol=symbol)
+    df_eod = get_yahoo_history(symbol = symbol,
+                               start_date = "2000-01-01",
+                               end_date = datetime.now().strftime("%Y-%m-%d"),
+                               frequency = time_slice)
+
     df_eod['symbol'] = symbol
     
     # Calculate Drawdown
-    df_eod = calc_drawdown(df_eod, price_col = 'close', window_size = drawdown_window)
+    df_eod = calc_drawdown(df_eod, price_col = 'Close', window_size = drawdown_window)
     
     # Count margin calls for each LVR
     mc_counts = list()
