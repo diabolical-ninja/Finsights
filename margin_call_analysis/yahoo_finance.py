@@ -56,10 +56,13 @@ def get_yahoo_history(symbol, start_date, end_date, frequency):
     # Map frequency to what Yahoo expect
     if frequency == 'daily':
         frequency = '1d'
+        freq = 'D'
     elif frequency == 'weekly':
         frequency = '1wk'
+        freq = 'W'
     elif frequency == 'monthly':
         frequency = '1mo'
+        freq = 'M'
     else:
         raise ValueError("Please provide a valid frequncy. The options are daily, weekly or monthly")
 
@@ -89,6 +92,11 @@ def get_yahoo_history(symbol, start_date, end_date, frequency):
         df = pd.read_csv(response_data)
 
         df['Date'] = pd.to_datetime(df['Date'])
+
+        # Fix up timestamp as well
+        df.index = pd.DatetimeIndex(df['Date'])
+        df = df.asfreq(freq=freq', method = 'ffill')
         
         return df
+
 
