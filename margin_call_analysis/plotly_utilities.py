@@ -141,7 +141,7 @@ def create_line(action, timestamp, y_min, y_max):
 
 
 
-def histogram(df, values, title='', xlabel='', ylabel='', shape='wide', key_col='', keys=''):
+def histogram(df, values, title='', xlabel='', ylabel='', shape='wide', key_col='', keys='', type=''):
     """Plotly Historgram Helper Function
     
     Args:
@@ -160,6 +160,9 @@ def histogram(df, values, title='', xlabel='', ylabel='', shape='wide', key_col=
             - The column name containing the lookup keys
         keys (str, optional): Defaults to ''.
             - The keys to charts
+        type (str, optional): Defaults to ''.
+            - Normalisation used for histogram. Options are:
+                "percent" | "probability" | "density" | "probability density" 
 
     Returns:
         Plotly histogram figure
@@ -175,6 +178,7 @@ def histogram(df, values, title='', xlabel='', ylabel='', shape='wide', key_col=
     if shape=='wide':
         data = [go.Histogram(
             x = df[vals],
+            histnorm = type,
             name = vals
         ) for vals in values]
 
@@ -184,6 +188,7 @@ def histogram(df, values, title='', xlabel='', ylabel='', shape='wide', key_col=
         
         data = [go.Histogram(
             x = df[df[key_col]==key][values[0]],
+            histnorm = type,
             name = key
         ) for key in keys]
 
