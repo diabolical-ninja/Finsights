@@ -105,8 +105,6 @@ class GrowthCalculator:
             # If the shares are liquidated at the end of the investment period, factor in CGT
             if year == self.years and final_year_liquidation:
 
-                print('In Liquidation')
-
                 # Calculate taxable capital gains from DRP
                 cg_dividend = sum([self.taxable_capital_gains(x['dividend_income'], (self.years -  x['year'])) for x in growth_history])
                 cg_initial_investment = self.taxable_capital_gains(self.starting_investment, self.years)
@@ -114,7 +112,7 @@ class GrowthCalculator:
                 # Factor into annual income & net investment value
                 total_earnings = self.salary + dividend_income + cg_dividend + cg_initial_investment
 
-                self.current_investment = self.current_investment - (cg_dividend + cg_initial_investment)
+                self.current_investment = self.current_investment - (tax(total_earnings) - tax(self.salary))
 
             else:
                 total_earnings = self.salary + dividend_income
