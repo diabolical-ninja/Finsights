@@ -133,9 +133,10 @@ class GrowthCalculator:
             )
 
         self.investment_history = growth_history
+        self.summarised = self.__summarise(final_year_liquidation)
 
 
-    def summarise(self):
+    def __summarise(self, final_year_liquidation=False):
         """Summarise the final position
                 
         Returns:
@@ -151,9 +152,16 @@ class GrowthCalculator:
         # Total Dividends
         total_dividends = sum([x['dividend_income'] for x in self.investment_history])
 
+        # Caculate Final Position
+        # Note, if final_year_liquidation == True then there's no need to remove excess tax as that's already accounted for
+        if not final_year_liquidation:
+            final_position = round(final_capital - total_excess_tax_paid,2)
+        else:
+            final_position = round(final_capital,2)
+
         return {
             'Total Tax Paid': round(total_excess_tax_paid,2),
             'Total Earnings': round(total_dividends,2),
             'Total Capital': round(final_capital, 2),
-            'Final Position': round(final_capital - total_excess_tax_paid,2), 
+            'Final Position': final_position, 
         }
