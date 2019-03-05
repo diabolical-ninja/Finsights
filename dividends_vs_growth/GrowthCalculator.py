@@ -18,6 +18,7 @@ class GrowthCalculator:
         self.cg = capital_growth
         self.dp = dividend_payout
         self.years = years
+        self.salary_tax = tax(salary)
 
 
     def eoy_stats(self, year, salary, dividend_income, excess_tax, capital):
@@ -108,11 +109,12 @@ class GrowthCalculator:
                 # Calculate taxable capital gains from DRP
                 cg_dividend = sum([self.taxable_capital_gains(x['dividend_income'], (self.years -  x['year'])) for x in growth_history])
                 cg_initial_investment = self.taxable_capital_gains(self.starting_investment, self.years)
+                total_cg = cg_dividend + cg_initial_investment
 
                 # Factor into annual income & net investment value
-                total_earnings = self.salary + dividend_income + cg_dividend + cg_initial_investment
+                total_earnings = self.salary + dividend_income + total_cg
 
-                self.current_investment = self.current_investment - (tax(total_earnings) - tax(self.salary))
+                self.current_investment = self.current_investment - (tax(total_earnings) - self.salary_tax)
 
             else:
                 total_earnings = self.salary + dividend_income
@@ -120,7 +122,7 @@ class GrowthCalculator:
 
             # Determine tax paid
             tax_paid = tax(total_earnings)
-            excess_tax = tax_paid - tax(self.salary)
+            excess_tax = tax_paid - self.salary_tax
 
             # Log outcome
             growth_history.append(self.eoy_stats(
@@ -153,11 +155,12 @@ class GrowthCalculator:
         total_dividends = sum([x['dividend_income'] for x in self.investment_history])
 
         # Caculate Final Position
-        # Note, if final_year_liquidation == True then there's no need to remove excess tax as that's already accounted for
+        # Note: If final_year_liquidation==True then don't double count the final year excess tax. It was taken into account above
         if not final_year_liquidation:
             final_position = round(final_capital - total_excess_tax_paid,2)
         else:
-            final_position = round(final_capital,2)
+            final_position = round(final_capital - total_excess_tax_paid + self.investment_history[-1]['excess_tax'],2)
+
 
         return {
             'Total Tax Paid': round(total_excess_tax_paid,2),
